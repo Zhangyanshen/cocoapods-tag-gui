@@ -1,0 +1,16 @@
+PODS:
+  - SwiftShell (5.1.0)
+
+DEPENDENCIES:
+  - SwiftShell (>= 5.1.0)
+
+SPEC REPOS:
+  trunk:
+    - SwiftShell
+
+SPEC CHECKSUMS:
+  SwiftShell: 0c2c6f2fcfc210e84a7b06390581923e2aab2ec7
+
+PODFILE CHECKSUM: 518f9f6044e55b3e6fe9fc1787f77a6f351fd3a8
+
+COCOAPODS: 1.11.2
