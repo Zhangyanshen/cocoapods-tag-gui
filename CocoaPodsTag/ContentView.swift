@@ -10,7 +10,7 @@ import SwiftShell
 
 struct ContentView: View {
     private let versionRegex = "^([0-9]+(?>\\.[0-9a-zA-Z]+)*(-[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?)?$"
-    
+
     @State private var log: String = ""
     @State private var running = false
     
@@ -35,166 +35,235 @@ struct ContentView: View {
     @State private var quick = false
     @State private var pushSpec = false
     
+    @State private var password = ""
+    @State private var showPwdSheet = false
+    
+    @State private var showLoading = false
+    
+    // 执行命令的上下文
+    var ctx: CustomContext {
+        var cleanctx = CustomContext(main)
+        if hasWorkDir && workDir.count != 0 {
+            cleanctx.currentdirectory = workDir
+        }
+        cleanctx.env["LANG"] = "en_US.UTF-8"
+        cleanctx.env["PATH"] = "\(main.env["HOME"]!)/.rvm/rubies/default/bin:\(main.env["HOME"]!)/.rvm/gems/default/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:"
+        return cleanctx
+    }
+    
+    // MARK: - Body
+    
     var body: some View {
         VStack {
-            Text("CocoaPods Tag")
-                .font(.largeTitle)
-                .foregroundColor(.primary)
-                .padding()
-            
-            HStack {
-                CustomButton(
-                    title: "选择工作目录",
-                    running: running,
-                    action: {
-                        selectWorkDir()
-                })
-                Text("\(workDir)")
-                Spacer()
-            }
-            .padding(8)
-            
-            HStack {
-                CustomTextField(
-                    tip: "版本号:",
-                    placeholder: "请输入版本号",
-                    content: $version,
-                    disabled: $running
-                )
-                CustomTextField(
-                    tip: "提交信息:",
-                    placeholder: "请输入提交信息",
-                    content: $commitMsg,
-                    disabled: $running
-                )
-                CustomTextField(
-                    tip: "tag信息:",
-                    placeholder: "请输入tag信息(可选)",
-                    content: $tagMsg,
-                    disabled: $running
-                )
-            }
-            .padding(8)
-            
-            HStack {
-                CustomTextField(
-                    tip: "前缀:",
-                    placeholder: "请输入前缀(可选)",
-                    content: $prefix,
-                    disabled: $running)
-                CustomTextField(
-                    tip: "后缀:",
-                    placeholder: "请输入后缀(可选)",
-                    content: $suffix,
-                    disabled: $running
-                )
-                
-                Text("Remotes:")
-                    .bold()
-                    .font(.title3)
-                Menu("\(remote)") {
-                    ForEach(remotes, id: \.self) { remote in
-                        Button(remote) {
-                            self.remote = String(remote)
-                        }
-                    }
-                }
-                .font(.title3)
-                .disabled(running)
-                
-                Text("Spec Repos:")
-                    .bold()
-                    .font(.title3)
-                Menu("\(specRepo)") {
-                    ForEach(specRepos, id: \.self) { repo in
-                        Button(repo) {
-                            self.specRepo = String(repo)
-                        }
-                    }
-                }
-                .font(.title3)
-                .disabled(running)
-            }
-            .padding(8)
-            
-            // 复选框
-            HStack {
-                Toggle(isOn: $quick) {
-                    Text("跳过耗时验证")
-                }
-                Toggle(isOn: $pushSpec) {
-                    Text("推送podspec")
-                }
-            }
-            .disabled(running)
-            .padding(8)
-            
-            // 底部按钮
-            HStack {
-                CustomButton(
-                    title: "创建Tag",
-                    running: running,
-                    action: {
-                        createTag()
-                })
-                    .alert(isPresented: $showAlert) {
-                        Alert(title: Text(alertMsg), dismissButton: .default(Text("OK"), action: {
-                            if exit {
-                                Darwin.exit(0)
-                            }
-                        }))
-                    }
-                CustomButton(
-                    title: "清空日志",
-                    running: running,
-                    action: {
-                        log = ""
-                })
-            }
-            
+            titleView
+            workDirView
+            firstRowView
+            secondRowView
+            checkBoxView
+            bottomButtonView
             CustomTextEditor(text: $log)
         }
         .frame(minWidth: 800, maxWidth: .infinity, minHeight: 600, maxHeight: .infinity)
-        .background(
-            LinearGradient(gradient: Gradient(colors: [Color.red.opacity(0.5), Color.blue.opacity(0.5)]), startPoint: .leading, endPoint: .trailing)
-        )
+        .background(BlurView())
         .ignoresSafeArea()
         .onAppear {
-            installPlugin()
-            loadGitRemotes()
-            loadSpecRepos()
             if !checkGemInstalled("cocoapods") {
                 showAlert = true
                 alertMsg = "您还未安装CocoaPods，请先安装CocoaPods！"
                 exit = true
+            } else {
+                checkPlugin()
+                loadGitRemotes()
+                loadSpecRepos()
             }
+        }
+        .alert(isPresented: $showAlert) {
+            Alert(title: Text(alertMsg), dismissButton: .default(Text("OK"), action: {
+                if exit {
+                    Darwin.exit(0)
+                }
+            }))
+        }
+        .sheet(isPresented: $showPwdSheet, content: {
+            TextFieldAlert(title: "安装插件需要管理员权限，请输入开机密码", placeholder: "请输入开机密码", firstButtonText: "退 出", secondButtonText: "确 认", text: $password) { password in
+                self.password = password
+                self.showPwdSheet = false
+                installPlugin()
+            } cancelAction: {
+                self.showPwdSheet = false
+                Darwin.exit(0)
+            }
+        })
+        .sheet(isPresented: $showLoading) {
+            LoadingView()
         }
     }
     
+    // 标题
+    var titleView: some View {
+        Text("CocoaPods Tag")
+            .font(.largeTitle)
+            .fontWeight(.bold)
+            .foregroundStyle(
+                .linearGradient(colors: [.pink, .blue], startPoint: .topLeading, endPoint: .bottomTrailing)
+            )
+            .padding()
+    }
+    
+    // 工作目录
+    var workDirView: some View {
+        HStack {
+            CustomButton(
+                title: "选择工作目录",
+                running: running,
+                action: {
+                    selectWorkDir()
+            })
+            Text("\(workDir)")
+            Spacer()
+        }
+        .padding(8)
+    }
+    
+    var firstRowView: some View {
+        HStack {
+            CustomTextField(
+                tip: "版本号:",
+                placeholder: "请输入版本号",
+                content: $version,
+                disabled: $running
+            )
+            CustomTextField(
+                tip: "提交信息:",
+                placeholder: "请输入提交信息",
+                content: $commitMsg,
+                disabled: $running
+            )
+            CustomTextField(
+                tip: "tag信息:",
+                placeholder: "请输入tag信息(可选)",
+                content: $tagMsg,
+                disabled: $running
+            )
+        }
+        .padding(8)
+    }
+    
+    var secondRowView: some View {
+        HStack {
+            CustomTextField(
+                tip: "前缀:",
+                placeholder: "请输入前缀(可选)",
+                content: $prefix,
+                disabled: $running)
+            CustomTextField(
+                tip: "后缀:",
+                placeholder: "请输入后缀(可选)",
+                content: $suffix,
+                disabled: $running
+            )
+            
+            Text("Remotes:")
+                .bold()
+                .font(.title3)
+            Menu(remote) {
+                ForEach(remotes, id: \.self) { remote in
+                    Button(remote) {
+                        self.remote = String(remote)
+                    }
+                }
+            }
+            .disabled(running)
+            .modifier(MenuStyle())
+            
+            Text("Spec Repos:")
+                .bold()
+                .font(.title3)
+            Menu(specRepo) {
+                ForEach(specRepos, id: \.self) { repo in
+                    Button(repo) {
+                        self.specRepo = String(repo)
+                    }
+                }
+            }
+            .modifier(MenuStyle())
+            .disabled(running)
+        }
+        .padding(8)
+    }
+    
+    // 复选框
+    var checkBoxView: some View {
+        HStack {
+            Toggle(isOn: $quick) {
+                Text("跳过耗时验证")
+            }
+            Toggle(isOn: $pushSpec) {
+                Text("推送podspec")
+            }
+        }
+        .disabled(running)
+        .padding(8)
+    }
+    
+    // 底部按钮
+    var bottomButtonView: some View {
+        HStack {
+            CustomButton(
+                title: "创建Tag",
+                running: running,
+                action: {
+                    createTag()
+            })
+            CustomButton(
+                title: "清空日志",
+                running: running,
+                action: {
+                    log = ""
+            })
+        }
+    }
+    
+    // MARK: - Private Methods
+    
     // 检查某个gem是否安装
     private func checkGemInstalled(_ name: String) -> Bool {
-        let gems = run("gem", "list").stdout.split(separator: "\n").filter { gem in
+        let gems = ctx.run("gem", "list").stdout.split(separator: "\n").filter { gem in
             gem.contains(name)
         }
         return gems.count > 0
     }
     
-    // 判断cocoapods-tag是否安装
+    // 检查cocoapods-tag是否已经安装
+    private func checkPlugin() {
+        if checkGemInstalled("cocoapods-tag") {
+            log += "cocoapods-tag已安装\n"
+        } else {
+            running = true
+            showPwdSheet = true
+        }
+    }
+    
+    // 安装cocoapods-tag
     private func installPlugin() {
         DispatchQueue.global().async {
-            configENV()
-            if !checkGemInstalled("cocoapods-tag") {
-                running = true
-                log += "正在安装cocoapods-tag，请稍后...\n"
-                let _ = run("gem", "install", "cocoapods-tag")
-                if checkGemInstalled("cocoapods-tag") {
-                    log += "cocoapods-tag安装成功\n"
-                    running = false
-                } else {
-                    log += "cocoapods-tag安装失败，请关闭并重新打开App再次尝试安装\n"
-                }
+            log += "正在安装cocoapods-tag，请稍后...\n"
+            let result = ctx.run(bash: "echo '\(self.password)' | sudo -S gem install cocoapods-tag")
+            debugPrint(result.exitcode)
+            if result.succeeded {
+                log += "cocoapods-tag安装成功\n"
+                running = false
             } else {
-                log += "cocoapods-tag已安装\n"
+                let msg = """
+                cocoapods-tag安装失败
+                
+                \(result.stderror)
+                请关闭并重新打开App再次尝试安装或者通过命令行手动安装`sudo gem install cocoapods-tag`
+                请确认密码输入正确
+                """
+                log += msg
+                showAlert = true
+                alertMsg = msg
             }
         }
     }
@@ -220,12 +289,11 @@ struct ContentView: View {
         if !hasWorkDir {
             return
         }
-        
         DispatchQueue.global().async {
             if workDir.count != 0 {
                 main.currentdirectory = workDir
             }
-            let result = run("git", "remote")
+            let result = ctx.run("git", "remote")
             if result.succeeded {
                 remotes = result.stdout.split(separator: "\n")
                 if remotes.count == 1 {
@@ -242,8 +310,7 @@ struct ContentView: View {
     // 加载spec repos
     private func loadSpecRepos() {
         DispatchQueue.global().async {
-            configENV()
-            specRepos = run("pod", "repo", "list").stdout.split(separator: "\n").filter({
+            specRepos = ctx.run("pod", "repo", "list").stdout.split(separator: "\n").filter({
                 let valid = String($0) =~ "^-"
                 return $0 != "" && !valid
             }).map({ String($0) })
@@ -255,15 +322,6 @@ struct ContentView: View {
             }
         }
     }
-    
-    // 配置环境变量
-    private func configENV() {
-        if hasWorkDir && workDir.count != 0 {
-            main.currentdirectory = workDir
-        }
-        main.env["LANG"] = "en_US.UTF-8"
-        main.env["PATH"] = "\(main.env["HOME"]!)/.rvm/rubies/default/bin:\(main.env["HOME"]!)/.rvm/gems/default/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:"
-    }
 
     // 创建tag
     private func createTag() {
@@ -272,7 +330,7 @@ struct ContentView: View {
             return
         }
         running = true
-        configENV()
+        showLoading = true
         
         var args = ["tag", version.strip(), commitMsg]
         if tagMsg.strip().count != 0 {
@@ -293,16 +351,16 @@ struct ContentView: View {
         if quick {
             args.append("--quick")
         }
-        print(args)
-//        running = false
-//        return
+        debugPrint(args)
         
-        let command = main.runAsync("pod", args).onCompletion { command in
+        let command = ctx.runAsync("pod", args).onCompletion { command in
             running = false
+            showLoading = false
             showAlert = true
             if command.exitcode() == 0 {
                 alertMsg = "😄恭喜你完成任务😄"
             } else {
+                debugPrint(command.exitcode())
                 alertMsg = "😭任务失败，请查看log😭"
             }
         }
@@ -313,6 +371,7 @@ struct ContentView: View {
         }
         command.stderror.onStringOutput { error in
             DispatchQueue.main.async {
+                debugPrint(error)
                 log += "\(error)"
             }
         }
@@ -330,6 +389,11 @@ struct ContentView: View {
             alertMsg = "版本号不能为空！"
             return false
         }
+        if !(version.strip() =~ versionRegex) {
+            log += "版本号不符合规范！\n\(versionRegex)\n"
+            alertMsg = "版本号不符合规范！\n\n\(versionRegex)"
+            return false
+        }
         if commitMsg.strip().count == 0 {
             log += "提交信息不能为空！\n"
             alertMsg = "提交信息不能为空！"
@@ -338,11 +402,6 @@ struct ContentView: View {
         if remote.count == 0 {
             log += "请选择tag要推送到的remote！\n"
             alertMsg = "请选择tag要推送到的remote！"
-            return false
-        }
-        if !(version.strip() =~ versionRegex) {
-            log += "版本号不符合规范！\n\(versionRegex)\n"
-            alertMsg = "版本号不符合规范！\n\n\(versionRegex)"
             return false
         }
         if prefix.strip().count > 0 && prefix.strip().contains(" ") {
@@ -359,6 +418,8 @@ struct ContentView: View {
     }
 }
 
+// MARK: - Custom View
+
 struct CustomButton: View {
     var title: String
     var running: Bool
@@ -373,16 +434,7 @@ struct CustomButton: View {
                 .bold()
         }
         .disabled(running)
-        .padding(10)
-        .background(
-            ZStack {
-                Color.blue
-                LinearGradient(gradient: Gradient(colors: [Color.white.opacity(0.3), Color.clear]), startPoint: .top, endPoint: .bottom)
-            }
-        )
-        .foregroundColor(.white)
-        .cornerRadius(10)
-        .buttonStyle(.plain)
+        .modifier(ButtonStyle())
     }
 }
 
@@ -397,8 +449,8 @@ struct CustomTextField: View {
             Text("\(tip)")
                 .font(.title3)
             TextField("\(placeholder)", text: $content)
-                .font(.title3)
                 .disabled(disabled)
+                .modifier(TextFieldStyle())
         }
     }
 }
@@ -416,10 +468,12 @@ struct CustomTextEditor: View {
     }
 }
 
+// MARK: - Previews
+
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
         ContentView()
-            .preferredColorScheme(.dark)
+            .preferredColorScheme(.light)
     }
 }

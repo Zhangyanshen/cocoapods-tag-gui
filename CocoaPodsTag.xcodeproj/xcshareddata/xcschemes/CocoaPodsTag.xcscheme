@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "EE3DD133280FA4C7002B19C7"
-               BuildableName = "CocoaPodsTag.app"
+               BuildableName = "CocoaPods Tag.app"
                BlueprintName = "CocoaPodsTag"
                ReferencedContainer = "container:CocoaPodsTag.xcodeproj">
             </BuildableReference>
@@ -45,7 +45,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "EE3DD133280FA4C7002B19C7"
-            BuildableName = "CocoaPodsTag.app"
+            BuildableName = "CocoaPods Tag.app"
             BlueprintName = "CocoaPodsTag"
             ReferencedContainer = "container:CocoaPodsTag.xcodeproj">
          </BuildableReference>
@@ -62,7 +62,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "EE3DD133280FA4C7002B19C7"
-            BuildableName = "CocoaPodsTag.app"
+            BuildableName = "CocoaPods Tag.app"
             BlueprintName = "CocoaPodsTag"
             ReferencedContainer = "container:CocoaPodsTag.xcodeproj">
          </BuildableReference>

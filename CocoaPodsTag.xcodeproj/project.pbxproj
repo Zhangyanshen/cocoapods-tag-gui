@@ -13,6 +13,10 @@
 		EE3DD13C280FA4C9002B19C7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EE3DD13B280FA4C9002B19C7 /* Assets.xcassets */; };
 		EE3DD13F280FA4C9002B19C7 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EE3DD13E280FA4C9002B19C7 /* Preview Assets.xcassets */; };
 		EE3DD147280FA569002B19C7 /* Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE3DD146280FA569002B19C7 /* Extension.swift */; };
+		EE7411F3281004B600729138 /* Styles.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7411F2281004B600729138 /* Styles.swift */; };
+		EE7418B02811372000729138 /* BlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7418AF2811372000729138 /* BlurView.swift */; };
+		EE7418B228114E5000729138 /* TextFieldAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7418B128114E5000729138 /* TextFieldAlert.swift */; };
+		EE74191A2813C55800729138 /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7419192813C55800729138 /* LoadingView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +30,10 @@
 		EE3DD13E280FA4C9002B19C7 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		EE3DD140280FA4C9002B19C7 /* CocoaPodsTag.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CocoaPodsTag.entitlements; sourceTree = "<group>"; };
 		EE3DD146280FA569002B19C7 /* Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; };
+		EE7411F2281004B600729138 /* Styles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Styles.swift; sourceTree = "<group>"; };
+		EE7418AF2811372000729138 /* BlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurView.swift; sourceTree = "<group>"; };
+		EE7418B128114E5000729138 /* TextFieldAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFieldAlert.swift; sourceTree = "<group>"; };
+		EE7419192813C55800729138 /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +88,8 @@
 			children = (
 				EE3DD137280FA4C7002B19C7 /* CocoaPodsTagApp.swift */,
 				EE3DD139280FA4C7002B19C7 /* ContentView.swift */,
+				EE7418AE281136FE00729138 /* View */,
+				EE7411F2281004B600729138 /* Styles.swift */,
 				EE3DD146280FA569002B19C7 /* Extension.swift */,
 				EE3DD13B280FA4C9002B19C7 /* Assets.xcassets */,
 				EE3DD140280FA4C9002B19C7 /* CocoaPodsTag.entitlements */,
@@ -94,6 +104,16 @@
 				EE3DD13E280FA4C9002B19C7 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		EE7418AE281136FE00729138 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				EE7418AF2811372000729138 /* BlurView.swift */,
+				EE7418B128114E5000729138 /* TextFieldAlert.swift */,
+				EE7419192813C55800729138 /* LoadingView.swift */,
+			);
+			path = View;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -193,8 +213,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				EE3DD147280FA569002B19C7 /* Extension.swift in Sources */,
+				EE7418B228114E5000729138 /* TextFieldAlert.swift in Sources */,
 				EE3DD13A280FA4C7002B19C7 /* ContentView.swift in Sources */,
 				EE3DD138280FA4C7002B19C7 /* CocoaPodsTagApp.swift in Sources */,
+				EE7411F3281004B600729138 /* Styles.swift in Sources */,
+				EE74191A2813C55800729138 /* LoadingView.swift in Sources */,
+				EE7418B02811372000729138 /* BlurView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -338,6 +362,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jensen.CocoaPodsTag;
 				PRODUCT_NAME = "CocoaPods Tag";
@@ -368,6 +393,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jensen.CocoaPodsTag;
 				PRODUCT_NAME = "CocoaPods Tag";

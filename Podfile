@@ -4,5 +4,6 @@
 target 'CocoaPodsTag' do
   
   pod 'SwiftShell', '>= 5.1.0'
+  pod 'Introspect'
 
 end
