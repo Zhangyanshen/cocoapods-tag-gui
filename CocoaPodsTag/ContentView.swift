@@ -246,9 +246,12 @@ struct ContentView: View {
     
     // 安装cocoapods-tag
     private func installPlugin() {
+        showLoading = true
         DispatchQueue.global().async {
             log += "正在安装cocoapods-tag，请稍后...\n"
-            let result = ctx.run(bash: "echo '\(self.password)' | sudo -S gem install cocoapods-tag")
+            let shellCommand = "echo '\(self.password)' | sudo -S gem install cocoapods-tag"
+            
+            let result = ctx.run(bash: shellCommand)
             debugPrint(result.exitcode)
             if result.succeeded {
                 log += "cocoapods-tag安装成功\n"
@@ -265,6 +268,9 @@ struct ContentView: View {
                 showAlert = true
                 alertMsg = msg
             }
+            DispatchQueue.main.async {
+                showLoading = false
+            }
         }
     }
     
@@ -274,14 +280,33 @@ struct ContentView: View {
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
-        let response = panel.runModal()
-        if response == .OK {
-            workDir = panel.url?.path ?? ""
-            if workDir.count != 0 {
-                hasWorkDir = true
-                loadGitRemotes()
+        panel.beginSheetModal(for: NSApp.keyWindow ?? NSWindow()) { response in
+            if response == .OK {
+                if checkWorkDir(panel.url) {
+                    workDir = panel.url!.path
+                    if workDir.count != 0 {
+                        hasWorkDir = true
+                        loadGitRemotes()
+                    }
+                }
             }
         }
+    }
+    
+    // 检查工作目录
+    private func checkWorkDir(_ workDirURL: URL?) -> Bool {
+        if workDirURL == nil {
+            showAlert = true
+            alertMsg = "工作目录不能为nil，请重新选择"
+            return false
+        }
+        let gitRepoDir = "\(workDirURL!.path)/.git"
+        if !FileManager.default.fileExists(atPath: gitRepoDir) {
+            showAlert = true
+            alertMsg = "工作目录不包含.git文件夹，请重新选择"
+            return false
+        }
+        return true
     }
     
     // 获取git

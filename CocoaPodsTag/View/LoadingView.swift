@@ -11,7 +11,6 @@ struct LoadingView: View {
     var body: some View {
         VStack {
             ProgressView()
-                .progressViewStyle(DarkBlueShadowProgressViewStyle())
                 .padding(8)
             Text("请稍后...")
                 .foregroundColor(.primary)
@@ -21,14 +20,6 @@ struct LoadingView: View {
         }
         .frame(width: 150, height: 150)
         .cornerRadius(8)
-    }
-}
-
-struct DarkBlueShadowProgressViewStyle: ProgressViewStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        ProgressView(configuration)
-            .foregroundColor(.red)
-            .foregroundStyle(.linearGradient(colors: [.pink, .blue], startPoint: .topLeading, endPoint: .bottomTrailing))
     }
 }
 
