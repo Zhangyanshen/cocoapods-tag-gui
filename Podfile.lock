@@ -1,20 +1,20 @@
 PODS:
-  - Introspect (0.1.4)
   - SwiftShell (5.1.0)
+  - SwiftyJSON (4.3.0)
 
 DEPENDENCIES:
-  - Introspect
   - SwiftShell (>= 5.1.0)
+  - SwiftyJSON (~> 4.0)
 
 SPEC REPOS:
   trunk:
-    - Introspect
     - SwiftShell
+    - SwiftyJSON
 
 SPEC CHECKSUMS:
-  Introspect: b62c4dd2063072327c21d618ef2bedc3c87bc366
   SwiftShell: 0c2c6f2fcfc210e84a7b06390581923e2aab2ec7
+  SwiftyJSON: 6faa0040f8b59dead0ee07436cbf76b73c08fd08
 
-PODFILE CHECKSUM: 9994a34053959090e54450e76439c05ef04db6fc
+PODFILE CHECKSUM: 0a835fcb5c6e790519ef73d54cc1e8fab386bdaf
 
 COCOAPODS: 1.11.2

@@ -17,6 +17,7 @@
 		EE7418B02811372000729138 /* BlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7418AF2811372000729138 /* BlurView.swift */; };
 		EE7418B228114E5000729138 /* TextFieldAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7418B128114E5000729138 /* TextFieldAlert.swift */; };
 		EE74191A2813C55800729138 /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7419192813C55800729138 /* LoadingView.swift */; };
+		EEB5A235281A3ED000C8BC18 /* SpecRepo.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEB5A234281A3ED000C8BC18 /* SpecRepo.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +35,7 @@
 		EE7418AF2811372000729138 /* BlurView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlurView.swift; sourceTree = "<group>"; };
 		EE7418B128114E5000729138 /* TextFieldAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFieldAlert.swift; sourceTree = "<group>"; };
 		EE7419192813C55800729138 /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
+		EEB5A234281A3ED000C8BC18 /* SpecRepo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpecRepo.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,6 +90,7 @@
 			children = (
 				EE3DD137280FA4C7002B19C7 /* CocoaPodsTagApp.swift */,
 				EE3DD139280FA4C7002B19C7 /* ContentView.swift */,
+				EEB5A236281A3EE200C8BC18 /* Model */,
 				EE7418AE281136FE00729138 /* View */,
 				EE7411F2281004B600729138 /* Styles.swift */,
 				EE3DD146280FA569002B19C7 /* Extension.swift */,
@@ -114,6 +117,14 @@
 				EE7419192813C55800729138 /* LoadingView.swift */,
 			);
 			path = View;
+			sourceTree = "<group>";
+		};
+		EEB5A236281A3EE200C8BC18 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				EEB5A234281A3ED000C8BC18 /* SpecRepo.swift */,
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -214,6 +225,7 @@
 			files = (
 				EE3DD147280FA569002B19C7 /* Extension.swift in Sources */,
 				EE7418B228114E5000729138 /* TextFieldAlert.swift in Sources */,
+				EEB5A235281A3ED000C8BC18 /* SpecRepo.swift in Sources */,
 				EE3DD13A280FA4C7002B19C7 /* ContentView.swift in Sources */,
 				EE3DD138280FA4C7002B19C7 /* CocoaPodsTagApp.swift in Sources */,
 				EE7411F3281004B600729138 /* Styles.swift in Sources */,
@@ -363,7 +375,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jensen.CocoaPodsTag;
 				PRODUCT_NAME = "CocoaPods Tag";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -394,7 +406,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jensen.CocoaPodsTag;
 				PRODUCT_NAME = "CocoaPods Tag";
 				SWIFT_EMIT_LOC_STRINGS = YES;

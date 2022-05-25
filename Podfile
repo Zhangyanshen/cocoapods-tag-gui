@@ -4,6 +4,6 @@
 target 'CocoaPodsTag' do
   
   pod 'SwiftShell', '>= 5.1.0'
-  pod 'Introspect'
+  pod 'SwiftyJSON', '~> 4.0'
 
 end

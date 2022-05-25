@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftShell
+import SwiftyJSON
 
 struct ContentView: View {
     private let versionRegex = "^([0-9]+(?>\\.[0-9a-zA-Z]+)*(-[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?)?$"
@@ -25,7 +26,7 @@ struct ContentView: View {
     @State private var remotes: [Substring] = []
     @State private var remote: String = ""
     
-    @State private var specRepos: [String] = []
+    @State private var specRepos: [SpecRepo] = []
     @State private var specRepo: String = ""
     
     @State private var showAlert = false
@@ -163,7 +164,7 @@ struct ContentView: View {
                 disabled: $running
             )
             
-            Text("Remotes:")
+            Text("Remote:")
                 .bold()
                 .font(.title3)
             Menu(remote) {
@@ -176,13 +177,19 @@ struct ContentView: View {
             .disabled(running)
             .modifier(MenuStyle())
             
-            Text("Spec Repos:")
+            Text("Spec Repo:")
                 .bold()
                 .font(.title3)
             Menu(specRepo) {
-                ForEach(specRepos, id: \.self) { repo in
-                    Button(repo) {
-                        self.specRepo = String(repo)
+                ForEach(specRepos) { repo in
+                    Button {
+                        self.specRepo = repo.name
+                    } label: {
+                        VStack {
+                            Text(repo.name)
+                            Text(repo.url)
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
             }
@@ -335,15 +342,12 @@ struct ContentView: View {
     // 加载spec repos
     private func loadSpecRepos() {
         DispatchQueue.global().async {
-            specRepos = ctx.run("pod", "repo", "list").stdout.split(separator: "\n").filter({
-                let valid = String($0) =~ "^-"
-                return $0 != "" && !valid
-            }).map({ String($0) })
+            let repoListStr = ctx.run(bash: "pod tag repo-list --format=json").stdout
+            let repoListJSON = JSON(parseJSON: repoListStr)
+            specRepos = repoListJSON.arrayValue.map { SpecRepo($0) }
+            
             if specRepos.count > 0 {
-                specRepos.removeLast()
-            }
-            if specRepos.count > 0 {
-                specRepo = String(specRepos[0])
+                specRepo = specRepos[0].name
             }
         }
     }
