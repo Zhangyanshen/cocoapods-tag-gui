@@ -11,8 +11,12 @@ import SwiftyJSON
 
 struct ContentView: View {
     private let versionRegex = "^([0-9]+(?>\\.[0-9a-zA-Z]+)*(-[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?)?$"
+    private let outRegexPattern = "\\[[0-9]+m"
+    private let matchVersion = "0.0.6"
+    
+    @Environment(\.colorScheme) var colorScheme
 
-    @State private var log: String = ""
+    @State private var log: NSAttributedString = NSAttributedString(string: "")
     @State private var running = false
     
     @State private var version: String = ""
@@ -33,6 +37,8 @@ struct ContentView: View {
     @State private var alertMsg = ""
     @State private var exit = false
     
+    @State private var needUpdate = false
+    
     @State private var quick = false
     @State private var pushSpec = false
     
@@ -40,6 +46,11 @@ struct ContentView: View {
     @State private var showPwdSheet = false
     
     @State private var showLoading = false
+    
+    @State private var showTagList = false
+    @State private var tagList: [String] = []
+    
+    @State private var showSpecRepoView = false
     
     // 执行命令的上下文
     var ctx: CustomContext {
@@ -60,9 +71,11 @@ struct ContentView: View {
             workDirView
             firstRowView
             secondRowView
+            thirdRowView
             checkBoxView
             bottomButtonView
-            CustomTextEditor(text: $log)
+            CustomTextView(richString: log)
+                .padding()
         }
         .frame(minWidth: 800, maxWidth: .infinity, minHeight: 600, maxHeight: .infinity)
         .background(BlurView())
@@ -74,8 +87,6 @@ struct ContentView: View {
                 exit = true
             } else {
                 checkPlugin()
-                loadGitRemotes()
-                loadSpecRepos()
             }
         }
         .alert(isPresented: $showAlert) {
@@ -86,17 +97,30 @@ struct ContentView: View {
             }))
         }
         .sheet(isPresented: $showPwdSheet, content: {
-            TextFieldAlert(title: "安装插件需要管理员权限，请输入开机密码", placeholder: "请输入开机密码", firstButtonText: "退 出", secondButtonText: "确 认", text: $password) { password in
+            TextFieldAlert(title: needUpdate ? "更新插件到v\(matchVersion)" : "安装插件", subTitle: "安装插件需要管理员权限，请输入开机密码", placeholder: "请输入开机密码", firstButtonText: "退 出", secondButtonText: "确 认", text: $password) { password in
                 self.password = password
                 self.showPwdSheet = false
                 installPlugin()
             } cancelAction: {
                 self.showPwdSheet = false
+                self.needUpdate = false
                 Darwin.exit(0)
             }
         })
         .sheet(isPresented: $showLoading) {
             LoadingView()
+        }
+        .sheet(isPresented: $showTagList) {
+            showTagList = false
+        } content: {
+            TagListView(tagList: $tagList)
+        }
+        .sheet(isPresented: $showSpecRepoView) {
+            showSpecRepoView = false
+        } content: {
+            SpecRepoListView(specRepos: specRepos) { specRepo in
+                self.specRepo = specRepo
+            }
         }
     }
     
@@ -121,6 +145,14 @@ struct ContentView: View {
                     selectWorkDir()
             })
             Text("\(workDir)")
+            if hasWorkDir {
+                Button("本地Tag") {
+                    fetchTagList()
+                }
+                Button("从Finder中打开") {
+                    openInFinder()
+                }
+            }
             Spacer()
         }
         .padding(8)
@@ -176,25 +208,19 @@ struct ContentView: View {
             }
             .disabled(running)
             .modifier(MenuStyle())
-            
-            Text("Spec Repo:")
-                .bold()
-                .font(.title3)
-            Menu(specRepo) {
-                ForEach(specRepos) { repo in
-                    Button {
-                        self.specRepo = repo.name
-                    } label: {
-                        VStack {
-                            Text(repo.name)
-                            Text(repo.url)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                }
+        }
+        .padding(8)
+    }
+    
+    var thirdRowView: some View {
+        HStack {
+            Button("选择spec repo") {
+                loadSpecRepos()
+                showSpecRepoView = true
             }
-            .modifier(MenuStyle())
             .disabled(running)
+            Text(specRepo)
+            Spacer()
         }
         .padding(8)
     }
@@ -208,6 +234,7 @@ struct ContentView: View {
             Toggle(isOn: $pushSpec) {
                 Text("推送podspec")
             }
+            .disabled(running || specRepo == "")
         }
         .disabled(running)
         .padding(8)
@@ -226,56 +253,108 @@ struct ContentView: View {
                 title: "清空日志",
                 running: running,
                 action: {
-                    log = ""
+                    log = NSAttributedString(string: "")
             })
         }
     }
     
     // MARK: - Private Methods
     
+    private func fetchTagList() {
+        DispatchQueue.global().async {
+            let result = ctx.run(bash: "git tag -l")
+            DispatchQueue.main.async {
+                if result.succeeded {
+                    showTagList.toggle()
+                    tagList = result.stdout.components(separatedBy: "\n").filter({$0 != ""})
+                } else {
+                    showAlert = true
+                    alertMsg = "获取本地tag失败\n\(result.stderror)"
+                }
+            }
+        }
+    }
+    
+    private func openInFinder() {
+        ctx.run(bash: "open \(workDir)")
+    }
+    
+    // 生成AttributedString
+    private func generateAttributedString(_ text: String, isError: Bool = false) {
+        let attrStr = NSMutableAttributedString(attributedString: log)
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.minimumLineHeight = 5;
+        let addAttrs = [
+            NSAttributedString.Key.foregroundColor: isError ? NSColor.systemRed : colorScheme == .dark ? NSColor.white : NSColor.black,
+            NSAttributedString.Key.font: isError ? NSFont.boldSystemFont(ofSize: 15) : NSFont.systemFont(ofSize: 15),
+            NSAttributedString.Key.paragraphStyle: paragraphStyle
+        ]
+        let appendAttr = NSAttributedString(string: text, attributes: addAttrs)
+        attrStr.append(appendAttr)
+        log = attrStr
+    }
+    
     // 检查某个gem是否安装
     private func checkGemInstalled(_ name: String) -> Bool {
-        let gems = ctx.run("gem", "list").stdout.split(separator: "\n").filter { gem in
-            gem.contains(name)
-        }
-        return gems.count > 0
+        let result = ctx.run(bash: "gem query \(name) -i")
+        return result.succeeded
     }
     
     // 检查cocoapods-tag是否已经安装
     private func checkPlugin() {
         if checkGemInstalled("cocoapods-tag") {
-            log += "cocoapods-tag已安装\n"
+            checkPluginVersion()
         } else {
+            needUpdate = false
             running = true
             showPwdSheet = true
         }
     }
     
-    // 安装cocoapods-tag
+    // 检查cocoapods-tag版本号
+    private func checkPluginVersion() {
+        DispatchQueue.global().async {
+            let result = ctx.run(bash: "gem query cocoapods-tag -i -v \(matchVersion)")
+            if result.succeeded {
+                generateAttributedString("cocoapods-tag已安装\n")
+            } else {
+                needUpdate = true
+                running = true
+                showPwdSheet = true
+            }
+        }
+    }
+    
+    // 安装或更新cocoapods-tag
     private func installPlugin() {
         showLoading = true
         DispatchQueue.global().async {
-            log += "正在安装cocoapods-tag，请稍后...\n"
-            let shellCommand = "echo '\(self.password)' | sudo -S gem install cocoapods-tag"
+            let tipStr = needUpdate ? "正在更新cocoapods-tag，请稍后...\n" : "正在安装cocoapods-tag，请稍后...\n"
+            generateAttributedString(tipStr)
+            
+            let shellCommand = """
+            echo "\(self.password)" | sudo -S gem \(needUpdate ? "update" : "install") cocoapods-tag
+            """
             
             let result = ctx.run(bash: shellCommand)
             debugPrint(result.exitcode)
             if result.succeeded {
-                log += "cocoapods-tag安装成功\n"
+                generateAttributedString(needUpdate ? "cocoapods-tag更新成功\n" : "cocoapods-tag安装成功\n")
                 running = false
             } else {
                 let msg = """
-                cocoapods-tag安装失败
+                \(needUpdate ? "cocoapods-tag更新失败" : "cocoapods-tag安装失败")
                 
-                \(result.stderror)
-                请关闭并重新打开App再次尝试安装或者通过命令行手动安装`sudo gem install cocoapods-tag`
+                \(result.stderror.regexReplace(with: outRegexPattern))
+                请关闭并重新打开App再次尝试或者通过命令行手动操作`\(needUpdate ? "sudo gem update cocoapods-tag" : "sudo gem install cocoapods-tag")`
                 请确认密码输入正确
                 """
-                log += msg
+                generateAttributedString(msg, isError: true)
                 showAlert = true
                 alertMsg = msg
             }
             DispatchQueue.main.async {
+                needUpdate = false
                 showLoading = false
             }
         }
@@ -344,10 +423,8 @@ struct ContentView: View {
         DispatchQueue.global().async {
             let repoListStr = ctx.run(bash: "pod tag repo-list --format=json").stdout
             let repoListJSON = JSON(parseJSON: repoListStr)
-            specRepos = repoListJSON.arrayValue.map { SpecRepo($0) }
-            
-            if specRepos.count > 0 {
-                specRepo = specRepos[0].name
+            DispatchQueue.main.async {
+                specRepos = repoListJSON.arrayValue.map { SpecRepo($0) }
             }
         }
     }
@@ -390,18 +467,18 @@ struct ContentView: View {
                 alertMsg = "😄恭喜你完成任务😄"
             } else {
                 debugPrint(command.exitcode())
-                alertMsg = "😭任务失败，请查看log😭"
+                alertMsg = "😭任务失败，请查看log😭\n\(command.stderror)"
             }
         }
         command.stdout.onStringOutput { str in
             DispatchQueue.main.async {
-                log += "\(str)"
+                generateAttributedString("\(str)\n", isError: str.contains("[!]"))
             }
         }
         command.stderror.onStringOutput { error in
             DispatchQueue.main.async {
                 debugPrint(error)
-                log += "\(error)"
+                generateAttributedString("\(error.regexReplace(with: outRegexPattern))\n", isError: true)
             }
         }
     }
@@ -409,37 +486,37 @@ struct ContentView: View {
     // 参数检查
     private func check() -> Bool {
         if !hasWorkDir || workDir.strip().count == 0 {
-            log += "请先选择工作目录！\n"
+            generateAttributedString("请先选择工作目录！\n")
             alertMsg = "请先选择工作目录！"
             return false
         }
         if version.strip().count == 0 {
-            log += "版本号不能为空！\n"
+            generateAttributedString("版本号不能为空！\n")
             alertMsg = "版本号不能为空！"
             return false
         }
         if !(version.strip() =~ versionRegex) {
-            log += "版本号不符合规范！\n\(versionRegex)\n"
+            generateAttributedString("版本号不符合规范！\n\(versionRegex)\n")
             alertMsg = "版本号不符合规范！\n\n\(versionRegex)"
             return false
         }
         if commitMsg.strip().count == 0 {
-            log += "提交信息不能为空！\n"
+            generateAttributedString("提交信息不能为空！\n")
             alertMsg = "提交信息不能为空！"
             return false
         }
         if remote.count == 0 {
-            log += "请选择tag要推送到的remote！\n"
+            generateAttributedString("请选择tag要推送到的remote！\n")
             alertMsg = "请选择tag要推送到的remote！"
             return false
         }
         if prefix.strip().count > 0 && prefix.strip().contains(" ") {
-            log += "tag前缀不能包含空格！\n"
+            generateAttributedString("tag前缀不能包含空格！\n")
             alertMsg = "tag前缀不能包含空格！"
             return false
         }
         if suffix.strip().count > 0 && suffix.strip().contains(" ") {
-            log += "tag后缀不能包含空格！\n"
+            generateAttributedString("tag后缀不能包含空格！\n")
             alertMsg = "tag后缀不能包含空格！"
             return false
         }

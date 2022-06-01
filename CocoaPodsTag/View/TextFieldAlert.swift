@@ -9,6 +9,7 @@ import SwiftUI
 
 struct TextFieldAlert: View {
     var title = "请输入内容"
+    var subTitle: String?
     var placeholder = "请输入内容"
     var firstButtonText = "取消"
     var secondButtonText = "确认"
@@ -23,6 +24,10 @@ struct TextFieldAlert: View {
                 .padding(.horizontal, 20)
                 .font(.title3)
                 .multilineTextAlignment(.center)
+            if subTitle != nil {
+                Text(subTitle!)
+                    .foregroundColor(.secondary)
+            }
             SecureField(placeholder, text: $text)
                 .modifier(TextFieldStyle(bgColor: .primary))
                 .border(Color("AlertBgColor").opacity(0.5), width: 0.5)

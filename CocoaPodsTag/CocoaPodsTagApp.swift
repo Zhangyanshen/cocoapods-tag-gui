@@ -26,8 +26,8 @@ struct CocoaPodsTagApp: App {
             }
         }
         
-        Settings {
-            
-        }
+//        Settings {
+//            
+//        }
     }
 }

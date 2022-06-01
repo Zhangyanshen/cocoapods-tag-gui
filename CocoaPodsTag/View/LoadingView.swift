@@ -11,15 +11,17 @@ struct LoadingView: View {
     var body: some View {
         VStack {
             ProgressView()
-                .padding(8)
+                .padding(.top, 20)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 10)
+                .progressViewStyle(LinearProgressViewStyle())
             Text("请稍后...")
                 .foregroundColor(.primary)
                 .font(.title3)
                 .fontWeight(.bold)
-                .padding(8)
+                .padding(.bottom, 20)
         }
-        .frame(width: 150, height: 150)
-        .cornerRadius(8)
+        .frame(width: 300)
     }
 }
 
