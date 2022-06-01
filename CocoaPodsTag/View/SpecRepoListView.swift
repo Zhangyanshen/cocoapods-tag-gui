@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SpecRepoListView: View {
-    var specRepos: [SpecRepo] = []
+    @Binding var specRepos: [SpecRepo]
     var confirmAction: (String) -> Void = { _ in }
     @Environment(\.dismiss) var dismiss
     @State private var selectedSpecRepo: SpecRepo.ID?
@@ -45,6 +45,6 @@ struct SpecRepoListView: View {
 
 struct SpecRepoListView_Previews: PreviewProvider {
     static var previews: some View {
-        SpecRepoListView()
+        SpecRepoListView(specRepos: .constant([]))
     }
 }

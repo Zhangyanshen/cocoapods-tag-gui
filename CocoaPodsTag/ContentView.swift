@@ -118,7 +118,7 @@ struct ContentView: View {
         .sheet(isPresented: $showSpecRepoView) {
             showSpecRepoView = false
         } content: {
-            SpecRepoListView(specRepos: specRepos) { specRepo in
+            SpecRepoListView(specRepos: $specRepos) { specRepo in
                 self.specRepo = specRepo
             }
         }
@@ -216,7 +216,6 @@ struct ContentView: View {
         HStack {
             Button("选择spec repo") {
                 loadSpecRepos()
-                showSpecRepoView = true
             }
             .disabled(running)
             Text(specRepo)
@@ -420,11 +419,20 @@ struct ContentView: View {
     
     // 加载spec repos
     private func loadSpecRepos() {
+        showLoading = true
         DispatchQueue.global().async {
-            let repoListStr = ctx.run(bash: "pod tag repo-list --format=json").stdout
-            let repoListJSON = JSON(parseJSON: repoListStr)
+            let result = ctx.run(bash: "pod tag repo-list --format=json")
             DispatchQueue.main.async {
-                specRepos = repoListJSON.arrayValue.map { SpecRepo($0) }
+                showLoading = false
+                if result.succeeded {
+                    showSpecRepoView = true
+                    let repoListStr = result.stdout
+                    let repoListJSON = JSON(parseJSON: repoListStr)
+                    specRepos = repoListJSON.arrayValue.map { SpecRepo($0) }
+                } else {
+                    showAlert = true
+                    alertMsg = "获取本地spec repo失败\n\(result.stderror)"
+                }
             }
         }
     }
