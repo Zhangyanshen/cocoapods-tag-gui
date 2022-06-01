@@ -332,7 +332,7 @@ struct ContentView: View {
             generateAttributedString(tipStr)
             
             let shellCommand = """
-            echo "\(self.password)" | sudo -S gem \(needUpdate ? "update" : "install") cocoapods-tag
+            echo "\(self.password)" | sudo -S gem install cocoapods-tag
             """
             
             let result = ctx.run(bash: shellCommand)
