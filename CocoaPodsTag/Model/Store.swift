@@ -12,6 +12,9 @@ final class Store: ObservableObject {
     @Published var selectedSpecRepo: String = "git@techgit.meitu.com:iosmodules/specs.git"
 //    @Published var selectedSpecRepo: SpecRepo?
     
+    @Published var remotes: [String] = []
+    @Published var remote: String?
+    
     private var applicationSupportDirectory: URL {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
     }

@@ -55,7 +55,7 @@ class Command {
     func loadGitRemotes() -> ([String], String?) {
         let result = ctx.run("git", "remote")
         if result.succeeded {
-            let remotes = result.stdout.components(separatedBy: "\n")
+            let remotes = result.stdout.components(separatedBy: "\n").filter({$0 != ""})
             return (remotes, nil)
         } else {
             return ([], formatErrorMsg(result.stderror))
@@ -82,7 +82,7 @@ class Command {
     }
     
     func deleteRemoteTag(_ tag: String, remote: String) -> String? {
-        let result = ctx.run(bash: "git push \(remote) —-delete \(tag)")
+        let result = ctx.run(bash: "git push \(remote)  :\(tag)")
         if result.succeeded {
             return nil
         } else {

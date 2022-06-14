@@ -14,6 +14,7 @@
 		EE124521284EE3D300655061 /* Command.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE124520284EE3D300655061 /* Command.swift */; };
 		EE124527284F2EB300655061 /* SpecRepoAddView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE124526284F2EB300655061 /* SpecRepoAddView.swift */; };
 		EE124529284F4B9B00655061 /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE124528284F4B9B00655061 /* Store.swift */; };
+		EE12452D285860AB00655061 /* SelectRemoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE12452C285860AB00655061 /* SelectRemoteView.swift */; };
 		EE3DD138280FA4C7002B19C7 /* CocoaPodsTagApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE3DD137280FA4C7002B19C7 /* CocoaPodsTagApp.swift */; };
 		EE3DD13A280FA4C7002B19C7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE3DD139280FA4C7002B19C7 /* ContentView.swift */; };
 		EE3DD13C280FA4C9002B19C7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EE3DD13B280FA4C9002B19C7 /* Assets.xcassets */; };
@@ -36,6 +37,7 @@
 		EE124520284EE3D300655061 /* Command.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Command.swift; sourceTree = "<group>"; };
 		EE124526284F2EB300655061 /* SpecRepoAddView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpecRepoAddView.swift; sourceTree = "<group>"; };
 		EE124528284F4B9B00655061 /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
+		EE12452C285860AB00655061 /* SelectRemoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectRemoteView.swift; sourceTree = "<group>"; };
 		EE3DD134280FA4C7002B19C7 /* CocoaPods Tag.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "CocoaPods Tag.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE3DD137280FA4C7002B19C7 /* CocoaPodsTagApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CocoaPodsTagApp.swift; sourceTree = "<group>"; };
 		EE3DD139280FA4C7002B19C7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -145,6 +147,7 @@
 				EE7419192813C55800729138 /* LoadingView.swift */,
 				EE12451A2845BCC500655061 /* CustomTextView.swift */,
 				EE12451C28461D8700655061 /* TagListView.swift */,
+				EE12452C285860AB00655061 /* SelectRemoteView.swift */,
 				EE124525284F2E8400655061 /* SpecRepo */,
 			);
 			path = View;
@@ -259,6 +262,7 @@
 				EE3DD147280FA569002B19C7 /* Extension.swift in Sources */,
 				EE7418B228114E5000729138 /* TextFieldAlert.swift in Sources */,
 				EE12451B2845BCC500655061 /* CustomTextView.swift in Sources */,
+				EE12452D285860AB00655061 /* SelectRemoteView.swift in Sources */,
 				EEB5A235281A3ED000C8BC18 /* SpecRepo.swift in Sources */,
 				EE3DD13A280FA4C7002B19C7 /* ContentView.swift in Sources */,
 				EE12451D28461D8700655061 /* TagListView.swift in Sources */,

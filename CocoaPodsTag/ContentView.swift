@@ -26,9 +26,6 @@ struct ContentView: View {
     @State private var prefix: String = ""
     @State private var suffix: String = ""
     
-    @State private var remotes: [String] = []
-    @State private var remote: String = ""
-    
     @State private var showAlert = false
     @State private var alertMsg = ""
     @State private var exit = false
@@ -184,10 +181,10 @@ struct ContentView: View {
             Text("Remote:")
                 .bold()
                 .font(.title3)
-            Menu(remote) {
-                ForEach(remotes, id: \.self) { remote in
+            Menu(store.remote ?? "") {
+                ForEach(store.remotes, id: \.self) { remote in
                     Button(remote) {
-                        self.remote = String(remote)
+                        store.remote = String(remote)
                     }
                 }
             }
@@ -373,14 +370,14 @@ struct ContentView: View {
     
     // 获取git
     private func loadGitRemotes() {
-        remote = ""
+        store.remote = nil
         DispatchQueue.global().async {
             let (remotes, error) = Command.sharedInstance.loadGitRemotes()
             DispatchQueue.main.async {
                 if error == nil {
-                    self.remotes = remotes
+                    store.remotes = remotes
                     if remotes.count == 1 {
-                        remote = remotes[0]
+                        store.remote = remotes[0]
                     }
                 } else {
                     showAlert = true
@@ -440,8 +437,8 @@ struct ContentView: View {
         if suffix.strip().count != 0 {
             args.append("--suffix=\(suffix.strip())")
         }
-        if remote.count != 0 {
-            args.append("--remote=\(remote)")
+        if store.remote != nil {
+            args.append("--remote=\(store.remote!)")
         }
         if pushSpec {
             args.append("--spec-repo=\(store.selectedSpecRepo)")
@@ -497,7 +494,7 @@ struct ContentView: View {
             alertMsg = "提交信息不能为空！"
             return false
         }
-        if remote.count == 0 {
+        if store.remote == nil {
             generateAttributedString("请选择tag要推送到的remote！\n")
             alertMsg = "请选择tag要推送到的remote！"
             return false
