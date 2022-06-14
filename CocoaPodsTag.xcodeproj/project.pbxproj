@@ -11,6 +11,9 @@
 		EE12451B2845BCC500655061 /* CustomTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE12451A2845BCC500655061 /* CustomTextView.swift */; };
 		EE12451D28461D8700655061 /* TagListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE12451C28461D8700655061 /* TagListView.swift */; };
 		EE12451F28470A2D00655061 /* SpecRepoListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE12451E28470A2D00655061 /* SpecRepoListView.swift */; };
+		EE124521284EE3D300655061 /* Command.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE124520284EE3D300655061 /* Command.swift */; };
+		EE124527284F2EB300655061 /* SpecRepoAddView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE124526284F2EB300655061 /* SpecRepoAddView.swift */; };
+		EE124529284F4B9B00655061 /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE124528284F4B9B00655061 /* Store.swift */; };
 		EE3DD138280FA4C7002B19C7 /* CocoaPodsTagApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE3DD137280FA4C7002B19C7 /* CocoaPodsTagApp.swift */; };
 		EE3DD13A280FA4C7002B19C7 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE3DD139280FA4C7002B19C7 /* ContentView.swift */; };
 		EE3DD13C280FA4C9002B19C7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EE3DD13B280FA4C9002B19C7 /* Assets.xcassets */; };
@@ -30,6 +33,9 @@
 		EE12451A2845BCC500655061 /* CustomTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTextView.swift; sourceTree = "<group>"; };
 		EE12451C28461D8700655061 /* TagListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagListView.swift; sourceTree = "<group>"; };
 		EE12451E28470A2D00655061 /* SpecRepoListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpecRepoListView.swift; sourceTree = "<group>"; };
+		EE124520284EE3D300655061 /* Command.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Command.swift; sourceTree = "<group>"; };
+		EE124526284F2EB300655061 /* SpecRepoAddView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpecRepoAddView.swift; sourceTree = "<group>"; };
+		EE124528284F4B9B00655061 /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
 		EE3DD134280FA4C7002B19C7 /* CocoaPods Tag.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "CocoaPods Tag.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE3DD137280FA4C7002B19C7 /* CocoaPodsTagApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CocoaPodsTagApp.swift; sourceTree = "<group>"; };
 		EE3DD139280FA4C7002B19C7 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -72,6 +78,23 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
+		EE124522284EE54A00655061 /* Util */ = {
+			isa = PBXGroup;
+			children = (
+				EE124520284EE3D300655061 /* Command.swift */,
+			);
+			path = Util;
+			sourceTree = "<group>";
+		};
+		EE124525284F2E8400655061 /* SpecRepo */ = {
+			isa = PBXGroup;
+			children = (
+				EE12451E28470A2D00655061 /* SpecRepoListView.swift */,
+				EE124526284F2EB300655061 /* SpecRepoAddView.swift */,
+			);
+			path = SpecRepo;
+			sourceTree = "<group>";
+		};
 		EE3DD12B280FA4C7002B19C7 = {
 			isa = PBXGroup;
 			children = (
@@ -95,6 +118,7 @@
 			children = (
 				EE3DD137280FA4C7002B19C7 /* CocoaPodsTagApp.swift */,
 				EE3DD139280FA4C7002B19C7 /* ContentView.swift */,
+				EE124522284EE54A00655061 /* Util */,
 				EEB5A236281A3EE200C8BC18 /* Model */,
 				EE7418AE281136FE00729138 /* View */,
 				EE7411F2281004B600729138 /* Styles.swift */,
@@ -121,7 +145,7 @@
 				EE7419192813C55800729138 /* LoadingView.swift */,
 				EE12451A2845BCC500655061 /* CustomTextView.swift */,
 				EE12451C28461D8700655061 /* TagListView.swift */,
-				EE12451E28470A2D00655061 /* SpecRepoListView.swift */,
+				EE124525284F2E8400655061 /* SpecRepo */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -130,6 +154,7 @@
 			isa = PBXGroup;
 			children = (
 				EEB5A234281A3ED000C8BC18 /* SpecRepo.swift */,
+				EE124528284F4B9B00655061 /* Store.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -238,10 +263,13 @@
 				EE3DD13A280FA4C7002B19C7 /* ContentView.swift in Sources */,
 				EE12451D28461D8700655061 /* TagListView.swift in Sources */,
 				EE3DD138280FA4C7002B19C7 /* CocoaPodsTagApp.swift in Sources */,
+				EE124529284F4B9B00655061 /* Store.swift in Sources */,
 				EE7411F3281004B600729138 /* Styles.swift in Sources */,
 				EE74191A2813C55800729138 /* LoadingView.swift in Sources */,
 				EE7418B02811372000729138 /* BlurView.swift in Sources */,
+				EE124527284F2EB300655061 /* SpecRepoAddView.swift in Sources */,
 				EE12451F28470A2D00655061 /* SpecRepoListView.swift in Sources */,
+				EE124521284EE3D300655061 /* Command.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -387,7 +415,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jensen.CocoaPodsTag;
 				PRODUCT_NAME = "CocoaPods Tag";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -419,7 +447,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jensen.CocoaPodsTag;
 				PRODUCT_NAME = "CocoaPods Tag";
 				SWIFT_EMIT_LOC_STRINGS = YES;

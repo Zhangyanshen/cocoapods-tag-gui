@@ -12,8 +12,9 @@ import SwiftyJSON
 struct ContentView: View {
     private let versionRegex = "^([0-9]+(?>\\.[0-9a-zA-Z]+)*(-[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?)?$"
     private let outRegexPattern = "\\[[0-9]+m"
-    private let matchVersion = "0.0.6"
+    private let matchVersion = "0.0.7"
     
+    @EnvironmentObject var store: Store
     @Environment(\.colorScheme) var colorScheme
 
     @State private var log: NSAttributedString = NSAttributedString(string: "")
@@ -24,14 +25,9 @@ struct ContentView: View {
     @State private var tagMsg: String = ""
     @State private var prefix: String = ""
     @State private var suffix: String = ""
-    @State private var hasWorkDir: Bool = false
-    @State private var workDir: String = "请先选择工作目录，工作目录必须包含podspec文件"
     
-    @State private var remotes: [Substring] = []
+    @State private var remotes: [String] = []
     @State private var remote: String = ""
-    
-    @State private var specRepos: [SpecRepo] = []
-    @State private var specRepo: String = ""
     
     @State private var showAlert = false
     @State private var alertMsg = ""
@@ -51,18 +47,7 @@ struct ContentView: View {
     @State private var tagList: [String] = []
     
     @State private var showSpecRepoView = false
-    
-    // 执行命令的上下文
-    var ctx: CustomContext {
-        var cleanctx = CustomContext(main)
-        if hasWorkDir && workDir.count != 0 {
-            cleanctx.currentdirectory = workDir
-        }
-        cleanctx.env["LANG"] = "en_US.UTF-8"
-        cleanctx.env["PATH"] = "\(main.env["HOME"]!)/.rvm/rubies/default/bin:\(main.env["HOME"]!)/.rvm/gems/default/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:"
-        return cleanctx
-    }
-    
+        
     // MARK: - Body
     
     var body: some View {
@@ -81,7 +66,7 @@ struct ContentView: View {
         .background(BlurView())
         .ignoresSafeArea()
         .onAppear {
-            if !checkGemInstalled("cocoapods") {
+            if !Command.sharedInstance.checkGemInstalled("cocoapods") {
                 showAlert = true
                 alertMsg = "您还未安装CocoaPods，请先安装CocoaPods！"
                 exit = true
@@ -113,14 +98,12 @@ struct ContentView: View {
         .sheet(isPresented: $showTagList) {
             showTagList = false
         } content: {
-            TagListView(tagList: $tagList)
+            TagListView()
         }
         .sheet(isPresented: $showSpecRepoView) {
             showSpecRepoView = false
         } content: {
-            SpecRepoListView(specRepos: $specRepos) { specRepo in
-                self.specRepo = specRepo
-            }
+            SpecRepoListView()
         }
     }
     
@@ -144,14 +127,16 @@ struct ContentView: View {
                 action: {
                     selectWorkDir()
             })
-            Text("\(workDir)")
-            if hasWorkDir {
+            if Command.sharedInstance.hasWorkDir {
+                Text(Command.sharedInstance.workDir!)
                 Button("本地Tag") {
                     fetchTagList()
                 }
                 Button("从Finder中打开") {
                     openInFinder()
                 }
+            } else {
+                Text("请先选择工作目录，工作目录必须包含podspec文件")
             }
             Spacer()
         }
@@ -218,7 +203,7 @@ struct ContentView: View {
                 loadSpecRepos()
             }
             .disabled(running)
-            Text(specRepo)
+            Text(store.selectedSpecRepo)
             Spacer()
         }
         .padding(8)
@@ -233,7 +218,7 @@ struct ContentView: View {
             Toggle(isOn: $pushSpec) {
                 Text("推送podspec")
             }
-            .disabled(running || specRepo == "")
+            .disabled(running)
         }
         .disabled(running)
         .padding(8)
@@ -261,21 +246,21 @@ struct ContentView: View {
     
     private func fetchTagList() {
         DispatchQueue.global().async {
-            let result = ctx.run(bash: "git tag -l")
+            let (tags, error) = Command.sharedInstance.fetchTagList()
             DispatchQueue.main.async {
-                if result.succeeded {
+                if error == nil {
                     showTagList.toggle()
-                    tagList = result.stdout.components(separatedBy: "\n").filter({$0 != ""})
+                    tagList = tags
                 } else {
                     showAlert = true
-                    alertMsg = "获取本地tag失败\n\(result.stderror)"
+                    alertMsg = "获取本地tag失败\n\(error!)"
                 }
             }
         }
     }
     
     private func openInFinder() {
-        ctx.run(bash: "open \(workDir)")
+        Command.sharedInstance.openInFinder()
     }
     
     // 生成AttributedString
@@ -293,15 +278,9 @@ struct ContentView: View {
         log = attrStr
     }
     
-    // 检查某个gem是否安装
-    private func checkGemInstalled(_ name: String) -> Bool {
-        let result = ctx.run(bash: "gem query \(name) -i")
-        return result.succeeded
-    }
-    
     // 检查cocoapods-tag是否已经安装
     private func checkPlugin() {
-        if checkGemInstalled("cocoapods-tag") {
+        if Command.sharedInstance.checkGemInstalled("cocoapods-tag") {
             checkPluginVersion()
         } else {
             needUpdate = false
@@ -313,13 +292,15 @@ struct ContentView: View {
     // 检查cocoapods-tag版本号
     private func checkPluginVersion() {
         DispatchQueue.global().async {
-            let result = ctx.run(bash: "gem query cocoapods-tag -i -v \(matchVersion)")
-            if result.succeeded {
-                generateAttributedString("cocoapods-tag已安装\n")
-            } else {
-                needUpdate = true
-                running = true
-                showPwdSheet = true
+            let installed = Command.sharedInstance.checkPluginVersion(for: "cocoapods-tag", version: matchVersion)
+            DispatchQueue.main.async {
+                if installed {
+                    generateAttributedString("cocoapods-tag已安装\n")
+                } else {
+                    needUpdate = true
+                    running = true
+                    showPwdSheet = true
+                }
             }
         }
     }
@@ -328,24 +309,21 @@ struct ContentView: View {
     private func installPlugin() {
         showLoading = true
         DispatchQueue.global().async {
-            let tipStr = needUpdate ? "正在更新cocoapods-tag，请稍后...\n" : "正在安装cocoapods-tag，请稍后...\n"
+            let tipStr = "正在\(needUpdate ? "更新" : "安装")cocoapods-tag，请稍后...\n"
             generateAttributedString(tipStr)
             
-            let shellCommand = """
-            echo "\(self.password)" | sudo -S gem install cocoapods-tag
-            """
+            Command.sharedInstance.uninstallGem("cocoapods-tag", password: password)
+            let error = Command.sharedInstance.installGem("cocoapods-tag", password: password)
             
-            let result = ctx.run(bash: shellCommand)
-            debugPrint(result.exitcode)
-            if result.succeeded {
-                generateAttributedString(needUpdate ? "cocoapods-tag更新成功\n" : "cocoapods-tag安装成功\n")
+            if error == nil {
+                generateAttributedString("cocoapods-tag\(needUpdate ? "更新" : "安装")成功\n")
                 running = false
             } else {
                 let msg = """
-                \(needUpdate ? "cocoapods-tag更新失败" : "cocoapods-tag安装失败")
+                "cocoapods-tag\(needUpdate ? "更新" : "安装")失败"
                 
-                \(result.stderror.regexReplace(with: outRegexPattern))
-                请关闭并重新打开App再次尝试或者通过命令行手动操作`\(needUpdate ? "sudo gem update cocoapods-tag" : "sudo gem install cocoapods-tag")`
+                \(error!)
+                请关闭并重新打开App再次尝试或者通过命令行手动安装`sudo gem install cocoapods-tag`
                 请确认密码输入正确
                 """
                 generateAttributedString(msg, isError: true)
@@ -368,9 +346,8 @@ struct ContentView: View {
         panel.beginSheetModal(for: NSApp.keyWindow ?? NSWindow()) { response in
             if response == .OK {
                 if checkWorkDir(panel.url) {
-                    workDir = panel.url!.path
-                    if workDir.count != 0 {
-                        hasWorkDir = true
+                    Command.sharedInstance.workDir = panel.url?.path
+                    if Command.sharedInstance.workDir != nil {
                         loadGitRemotes()
                     }
                 }
@@ -396,23 +373,19 @@ struct ContentView: View {
     
     // 获取git
     private func loadGitRemotes() {
-        if !hasWorkDir {
-            return
-        }
+        remote = ""
         DispatchQueue.global().async {
-            if workDir.count != 0 {
-                main.currentdirectory = workDir
-            }
-            let result = ctx.run("git", "remote")
-            if result.succeeded {
-                remotes = result.stdout.split(separator: "\n")
-                if remotes.count == 1 {
-                    remote = String(remotes[0])
+            let (remotes, error) = Command.sharedInstance.loadGitRemotes()
+            DispatchQueue.main.async {
+                if error == nil {
+                    self.remotes = remotes
+                    if remotes.count == 1 {
+                        remote = remotes[0]
+                    }
+                } else {
+                    showAlert = true
+                    alertMsg = "获取remote失败\n\(error!)"
                 }
-            } else {
-                showAlert = true
-                alertMsg = "选择的目录不包含.git文件夹，请重新选择"
-                hasWorkDir = false
             }
         }
     }
@@ -421,18 +394,29 @@ struct ContentView: View {
     private func loadSpecRepos() {
         showLoading = true
         DispatchQueue.global().async {
-            let result = ctx.run(bash: "pod tag repo-list --format=json")
+            let (repos, error) = Command.sharedInstance.loadSpecRepos()
             DispatchQueue.main.async {
                 showLoading = false
-                if result.succeeded {
+                if error == nil {
                     showSpecRepoView = true
-                    let repoListStr = result.stdout
-                    let repoListJSON = JSON(parseJSON: repoListStr)
-                    specRepos = repoListJSON.arrayValue.map { SpecRepo($0) }
+                    store.specRepos = repos
                 } else {
                     showAlert = true
-                    alertMsg = "获取本地spec repo失败\n\(result.stderror)"
+                    alertMsg = "获取本地spec repo失败\n\(error!)"
                 }
+            }
+        }
+    }
+    
+    private func removeInvalidSpecRepo() {
+        showLoading = true
+        DispatchQueue.global().async {
+            let validSpecRepos = store.removeInvalidSpecRepos()
+            DispatchQueue.main.async {
+                store.specRepos = validSpecRepos
+                store.save()
+                showLoading = false
+                showSpecRepoView = true
             }
         }
     }
@@ -459,15 +443,15 @@ struct ContentView: View {
         if remote.count != 0 {
             args.append("--remote=\(remote)")
         }
-        if pushSpec && specRepo.count != 0 {
-            args.append("--spec-repo=\(specRepo)")
+        if pushSpec {
+            args.append("--spec-repo=\(store.selectedSpecRepo)")
         }
         if quick {
             args.append("--quick")
         }
         debugPrint(args)
         
-        let command = ctx.runAsync("pod", args).onCompletion { command in
+        let command = Command.sharedInstance.ctx.runAsync("pod", args).onCompletion { command in
             running = false
             showLoading = false
             showAlert = true
@@ -493,7 +477,7 @@ struct ContentView: View {
     
     // 参数检查
     private func check() -> Bool {
-        if !hasWorkDir || workDir.strip().count == 0 {
+        if Command.sharedInstance.workDir == nil {
             generateAttributedString("请先选择工作目录！\n")
             alertMsg = "请先选择工作目录！"
             return false
