@@ -12,7 +12,6 @@ import SwiftyJSON
 struct ContentView: View {
     private let versionRegex = "^([0-9]+(?>\\.[0-9a-zA-Z]+)*(-[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?)?$"
     private let outRegexPattern = "\\[[0-9]+m"
-    private let matchVersion = "0.0.7"
     
     @EnvironmentObject var store: Store
     @Environment(\.colorScheme) var colorScheme
@@ -63,13 +62,7 @@ struct ContentView: View {
         .background(BlurView())
         .ignoresSafeArea()
         .onAppear {
-            if !Command.sharedInstance.checkGemInstalled("cocoapods") {
-                showAlert = true
-                alertMsg = "您还未安装CocoaPods，请先安装CocoaPods！"
-                exit = true
-            } else {
-                checkPlugin()
-            }
+            
         }
         .alert(isPresented: $showAlert) {
             Alert(title: Text(alertMsg), dismissButton: .default(Text("OK"), action: {
@@ -78,17 +71,6 @@ struct ContentView: View {
                 }
             }))
         }
-        .sheet(isPresented: $showPwdSheet, content: {
-            TextFieldAlert(title: needUpdate ? "更新插件到v\(matchVersion)" : "安装插件", subTitle: "安装插件需要管理员权限，请输入开机密码", placeholder: "请输入开机密码", firstButtonText: "退 出", secondButtonText: "确 认", text: $password) { password in
-                self.password = password
-                self.showPwdSheet = false
-                installPlugin()
-            } cancelAction: {
-                self.showPwdSheet = false
-                self.needUpdate = false
-                Darwin.exit(0)
-            }
-        })
         .sheet(isPresented: $showLoading) {
             LoadingView()
         }
@@ -273,65 +255,6 @@ struct ContentView: View {
         let appendAttr = NSAttributedString(string: text, attributes: addAttrs)
         attrStr.append(appendAttr)
         log = attrStr
-    }
-    
-    // 检查cocoapods-tag是否已经安装
-    private func checkPlugin() {
-        if Command.sharedInstance.checkGemInstalled("cocoapods-tag") {
-            checkPluginVersion()
-        } else {
-            needUpdate = false
-            running = true
-            showPwdSheet = true
-        }
-    }
-    
-    // 检查cocoapods-tag版本号
-    private func checkPluginVersion() {
-        DispatchQueue.global().async {
-            let installed = Command.sharedInstance.checkPluginVersion(for: "cocoapods-tag", version: matchVersion)
-            DispatchQueue.main.async {
-                if installed {
-                    generateAttributedString("cocoapods-tag已安装\n")
-                } else {
-                    needUpdate = true
-                    running = true
-                    showPwdSheet = true
-                }
-            }
-        }
-    }
-    
-    // 安装或更新cocoapods-tag
-    private func installPlugin() {
-        showLoading = true
-        DispatchQueue.global().async {
-            let tipStr = "正在\(needUpdate ? "更新" : "安装")cocoapods-tag，请稍后...\n"
-            generateAttributedString(tipStr)
-            
-            Command.sharedInstance.uninstallGem("cocoapods-tag", password: password)
-            let error = Command.sharedInstance.installGem("cocoapods-tag", password: password)
-            
-            if error == nil {
-                generateAttributedString("cocoapods-tag\(needUpdate ? "更新" : "安装")成功\n")
-                running = false
-            } else {
-                let msg = """
-                "cocoapods-tag\(needUpdate ? "更新" : "安装")失败"
-                
-                \(error!)
-                请关闭并重新打开App再次尝试或者通过命令行手动安装`sudo gem install cocoapods-tag`
-                请确认密码输入正确
-                """
-                generateAttributedString(msg, isError: true)
-                showAlert = true
-                alertMsg = msg
-            }
-            DispatchQueue.main.async {
-                needUpdate = false
-                showLoading = false
-            }
-        }
     }
     
     // 选择工作目录

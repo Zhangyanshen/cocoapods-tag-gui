@@ -25,6 +25,7 @@
 		EE7418B228114E5000729138 /* TextFieldAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7418B128114E5000729138 /* TextFieldAlert.swift */; };
 		EE74191A2813C55800729138 /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7419192813C55800729138 /* LoadingView.swift */; };
 		EEB5A235281A3ED000C8BC18 /* SpecRepo.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEB5A234281A3ED000C8BC18 /* SpecRepo.swift */; };
+		EEBD085E286DCB4200803D5C /* bundle in Resources */ = {isa = PBXBuildFile; fileRef = EEBD085D286DCB4200803D5C /* bundle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -49,6 +50,7 @@
 		EE7418B128114E5000729138 /* TextFieldAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFieldAlert.swift; sourceTree = "<group>"; };
 		EE7419192813C55800729138 /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
 		EEB5A234281A3ED000C8BC18 /* SpecRepo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpecRepo.swift; sourceTree = "<group>"; };
+		EEBD085D286DCB4200803D5C /* bundle */ = {isa = PBXFileReference; lastKnownFileType = folder; path = bundle; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,6 +120,7 @@
 		EE3DD136280FA4C7002B19C7 /* CocoaPodsTag */ = {
 			isa = PBXGroup;
 			children = (
+				EEBD085D286DCB4200803D5C /* bundle */,
 				EE3DD137280FA4C7002B19C7 /* CocoaPodsTagApp.swift */,
 				EE3DD139280FA4C7002B19C7 /* ContentView.swift */,
 				EE124522284EE54A00655061 /* Util */,
@@ -223,6 +226,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EE3DD13F280FA4C9002B19C7 /* Preview Assets.xcassets in Resources */,
+				EEBD085E286DCB4200803D5C /* bundle in Resources */,
 				EE3DD13C280FA4C9002B19C7 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

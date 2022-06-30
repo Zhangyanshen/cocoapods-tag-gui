@@ -50,6 +50,7 @@ struct SpecRepoListView: View {
                 } label: {
                     Image(systemName: "plus")
                 }
+                .help("添加spec repo")
             }
             ToolbarItem(placement: .destructiveAction) {
                 Button {
@@ -64,6 +65,7 @@ struct SpecRepoListView: View {
                 } label: {
                     Image(systemName: "trash")
                 }
+                .help("删除spec repo")
             }
 //            ToolbarItemGroup {
 //                Text("\(store.specRepos.count) repos")

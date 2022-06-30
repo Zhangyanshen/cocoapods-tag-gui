@@ -27,7 +27,11 @@ class Command {
             cleanctx.currentdirectory = workDir!
         }
         cleanctx.env["LANG"] = "en_US.UTF-8"
-        cleanctx.env["PATH"] = "\(main.env["HOME"]!)/.rvm/rubies/default/bin:\(main.env["HOME"]!)/.rvm/gems/default/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:"
+        var env: String = ""
+        if let resourcesDir = Bundle.main.resourcePath {
+            env = "\(resourcesDir)/bundle/ruby/2.7.0/bin:/usr/bin:"
+        }
+        cleanctx.env["PATH"] = env
         return cleanctx
     }
     

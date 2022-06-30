@@ -1,0 +1,13 @@
+current directory: /Users/jensen/Desktop/CocoaPodsDemo/bundle/ruby/2.7.0/gems/json-2.6.2/ext/json
+/Users/jensen/.rvm/rubies/ruby-2.7.0/bin/ruby -I /Users/jensen/.rvm/rubies/ruby-2.7.0/lib/ruby/2.7.0 -r ./siteconf20220630-10727-1ml3k7j.rb extconf.rb
+creating Makefile
+
+current directory: /Users/jensen/Desktop/CocoaPodsDemo/bundle/ruby/2.7.0/gems/json-2.6.2/ext/json
+make "DESTDIR=" clean
+
+current directory: /Users/jensen/Desktop/CocoaPodsDemo/bundle/ruby/2.7.0/gems/json-2.6.2/ext/json
+make "DESTDIR="
+make: Nothing to be done for `all'.
+
+current directory: /Users/jensen/Desktop/CocoaPodsDemo/bundle/ruby/2.7.0/gems/json-2.6.2/ext/json
+make "DESTDIR=" install
